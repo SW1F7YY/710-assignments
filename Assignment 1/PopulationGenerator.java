@@ -1,6 +1,13 @@
+import java.util.ArrayList;
 import java.util.List;
 
 public class PopulationGenerator {
+
+    public PopulationGenerator(String[] terminalSet, FunctionSymbol[] functionalSet){
+        this.terminalSet = terminalSet;
+        this.functionalSet = functionalSet;
+    }
+
     public enum FunctionSymbol {
         ADD("+", 2),
         SUB("-", 2),
@@ -21,13 +28,13 @@ public class PopulationGenerator {
     public FunctionSymbol[] functionalSet;
     public enum PopulationMethod { GROW, FULL, RAMPED }
 
-    public List<Node> generate(Method method, int popSize, int maxDepth) {
+    public List<Node> generate(PopulationMethod method, int popSize, int maxDepth) {
         List<Node> population = new ArrayList<>();
 
         for (int i = 0; i < popSize; i++) {
             if (method == PopulationMethod.FULL) {
                 population.add(buildFull(maxDepth));
-            } else if (method === PopulationMethod.GROW) {
+            } else if (method == PopulationMethod.GROW) {
                 population.add(buildGrow(maxDepth));
             } else {
                 population.add(buildRamped(maxDepth));
@@ -38,7 +45,18 @@ public class PopulationGenerator {
 
     public Node buildGrow(int maxDepth) {
         // build the tree root
-        int randomInt = (int)(Math.random() * functionalSet.length - 1);
-        Node rootNode = Node(functionalSet[randomInt].label)
+        int randomRootIndex = (int)(Math.random() * functionalSet.length);
+        Node rootNode = new Node(functionalSet[randomRootIndex].label);
+        return null;
+    };
+
+    public Node buildFull(int maxDepth) {
+        int randomRootIndex = (int)(Math.random() * functionalSet.length);
+        Node rootNode = new Node(functionalSet[randomRootIndex].label);
+        return null;
+    }
+
+    public Node buildRamped(int maxDepth) {
+        return null;
     }
 }
