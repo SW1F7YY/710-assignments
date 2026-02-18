@@ -1,18 +1,24 @@
+import java.util.ArrayList;
+import java.util.List;
+
 public class Node {
     public String value;
     public List<Node> children;
     public Node parent;
     public int depth;
+    public String type;
 
-    public Node(String value) {
+    public Node(String value, String type) {
         this.value = value;
         this.children = new ArrayList<>();
+        this.type = type;
     }
 
-    public void printTree(String prefix) {
-        System.out.println(prefix + "|___" + value);
+    public void printTree(String indent) {
+        System.out.println(indent + "|___ " + value + " [" + type + "]");
         for (Node child : children) {
-            child.printTree(prefix + "     ");
+            // If the current node is a function, its children should indent further
+            child.printTree(indent + "     ");
         }
     }
 }
