@@ -4,7 +4,7 @@ public class Main {
     public static void main(String[] args){
         // Depth will always start from 1 E.x: Max Depth 1 will only be 1 node aka root node
 
-        String[] terminals = {"1","2"};
+        String[] terminals = {"1","2"}; // this will be the inputs from the dataset
         PopulationGenerator.FunctionSymbol[] functionSymbols = {PopulationGenerator.FunctionSymbol.ADD, PopulationGenerator.FunctionSymbol.SUB};
         StringBuilder terminalString = new StringBuilder();
         for (String terminal: terminals){
@@ -27,6 +27,12 @@ public class Main {
             System.out.println("Tree " + (i + 1) + ":\n");
             Node root = population.get(i);
             root.printTree("");
+        }
+
+        System.out.println("Starting fitness function");
+        for( int i = 0; i< population.size(); i++){
+
+           // calculate the fitness for each member of the population
         }
     }
 }

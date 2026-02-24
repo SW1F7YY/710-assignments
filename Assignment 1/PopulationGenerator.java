@@ -24,6 +24,15 @@ public class PopulationGenerator {
         }
     }
 
+    public FunctionSymbol getFunctionSymbol(String value) {
+        for (FunctionSymbol symbol : FunctionSymbol.values()) {
+            if (symbol.label.equals(value)) {
+                return symbol;
+            }
+        }
+        return null;
+    }
+
     public String[] terminalSet;
     public FunctionSymbol[] functionalSet;
     public enum PopulationMethod { GROW, FULL, RAMPED }
