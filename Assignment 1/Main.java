@@ -39,7 +39,7 @@ public class Main {
         }
         System.out.println(GREEN + "Sets populated, creating population generator" + RESET);
 
-        Path path = Paths.get("/Users/stephansmit/Desktop/Uni Assignments/710-assignments/Assignment 1/training_data.txt");
+        Path path = Paths.get("C:\\Users\\Family\\Desktop\\Uni\\COS 710\\Assignment 1/training_data.txt");
         List<String> trainingDataLines = null;
         try{
             trainingDataLines = Files.readAllLines(path);}
@@ -82,7 +82,6 @@ public class Main {
                             .toArray();
 
                     // Separate inputs from target
-                    // Assuming target is the last index (7 for A-G + target)
                     double target = rowValues[rowValues.length - 1];
                     FitnessFunction ff = new FitnessFunction();
                     double prediction = ff.calculateFitness(tree, rowValues, terminals);
@@ -105,6 +104,15 @@ public class Main {
             List<Node> newPopulation = tournamentSelection.performTournamentSelection();
             System.out.println(GREEN + "Selection finished" + RESET);
 
+            for (int i = 0; i < newPopulation.size(); i++){
+                System.out.println("\nNew population tree " + (i + 1) + ":");
+                newPopulation.get(i).printTree("");
+            }
+            System.out.println(YELLOW + "Starting crossover" + RESET);
+            
+            GenericOperators gp = new GenericOperators("classic", newPopulation);
+            newPopulation = gp.classicCrossover();
+            System.out.println(GREEN + "Generic operations passed" + RESET);
             for (int i = 0; i < newPopulation.size(); i++){
                 System.out.println("\nNew population tree " + (i + 1) + ":");
                 newPopulation.get(i).printTree("");
