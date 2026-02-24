@@ -1,28 +1,30 @@
-public class FitnessFunction {
-    public double calculateFitness(Node rootNode){
-        System.out.println("starting fitness calculation");
-        if (rootNode.type.equals("terminal")) return Double.parseDouble(rootNode.value);
+import java.io.IOError;
+import java.util.ArrayList;
+import java.util.List;
 
-        System.out.println("Entering recursion");
-        String calculation = calculateFitnessHelper(rootNode);
-        System.out.println("Final String:" + calculation);
-        return 0;
+public class FitnessFunction {
+    public double calculateFitness(Node rootNode, double[] trainingDataTerminalValues, List<String> terminalPlaceholders){
+        if (rootNode.type.equals("terminal")) return Double.parseDouble(rootNode.value);
+        return calculateFitnessHelper(rootNode,trainingDataTerminalValues, terminalPlaceholders);
     };
 
-    public String calculateFitnessHelper(Node currentNode) {
+    private double calculateFitnessHelper(Node currentNode, double[] trainingDataTerminalValues, List<String> terminalPlaceholders) {
+        // check if it's a terminal
+        if (currentNode.type.equals("terminal")){
+            return trainingDataTerminalValues[terminalPlaceholders.indexOf(currentNode.value)];
+        };
 
-        if (currentNode.type.equals("terminal")) return currentNode.value;
-        StringBuilder returnString = new StringBuilder();
+        // find the arity
+        PopulationGenerator arityFinder = new PopulationGenerator();
+        PopulationGenerator.FunctionSymbol currentSymbol = arityFinder.getFunctionSymbol(currentNode.value);
+        int currentSymbolArity = arityFinder.getFunctionSymbol(currentNode.value).arity;
+        if (currentSymbolArity != currentNode.children.size()) throw new IOError(new Throwable("Children size and arity doesn't match"));
+
+        // get the values for the children
+        double[] childResults = new double[currentNode.children.size()];
         for ( int i = 0; i < currentNode.children.size(); i++){
-            // check the arity and start building the correct string
-            if (i == 1) returnString.append(currentNode.value);
-            returnString.append("(");
-            if (currentNode.children.get(i).type.equals("terminal")) returnString.append(currentNode.children.get(i).value);
-            else {
-                returnString.append(calculateFitnessHelper(currentNode.children.get(i)));
-            }
+            childResults[i] = calculateFitnessHelper(currentNode.children.get(i), trainingDataTerminalValues, terminalPlaceholders);
         }
-        returnString.append(")");
-        return returnString;
+        return currentSymbol.apply(childResults);
     }
 }

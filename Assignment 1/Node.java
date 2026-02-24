@@ -7,6 +7,7 @@ public class Node {
     public Node parent;
     public int depth;
     public String type;
+    public double fitness;
 
     public Node(String value, String type) {
         this.value = value;
