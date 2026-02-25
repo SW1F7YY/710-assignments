@@ -7,6 +7,10 @@ import java.util.Random;
 
 public class PopulationGenerator {
     public Random rng;
+    public List<String> terminalSet;
+    public FunctionSymbol[] functionalSet;
+    public enum PopulationMethod { GROW, FULL, RAMPED }
+
     public PopulationGenerator(List<String> terminalSet, FunctionSymbol[] functionalSet, Random rng){
         this.terminalSet = terminalSet;
         this.functionalSet = functionalSet;
@@ -70,9 +74,7 @@ public class PopulationGenerator {
         return null;
     }
 
-    public List<String> terminalSet;
-    public FunctionSymbol[] functionalSet;
-    public enum PopulationMethod { GROW, FULL, RAMPED }
+
 
     public List<Node> generate(PopulationMethod method, int popSize, int maxDepth) {
         List<Node> population = new ArrayList<>();
@@ -170,5 +172,7 @@ public class PopulationGenerator {
         }
         return currentNode;
     }
-
+    public List<Node> cleanUpTrees (List<Node> population) {
+        return null;
+    }
 }

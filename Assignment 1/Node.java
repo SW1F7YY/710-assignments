@@ -15,11 +15,26 @@ public class Node {
         this.type = type;
     }
 
+    public Node(String value, String type, List<Node> children){
+        this.value = value;
+        this.children = children;
+        this.type = type;
+    }
+
     public void printTree(String indent) {
         System.out.println(indent + "|___ " + value + " [" + type + "]");
         for (Node child : children) {
-            // If the current node is a function, its children should indent further
             child.printTree(indent + "     ");
         }
+    }
+
+    public Node copy() {
+        List<Node> clonedChildren = new ArrayList<>();
+
+        for (Node child : this.children) {
+            clonedChildren.add(child.copy());
+        }
+
+        return new Node(this.value, this.type, clonedChildren);
     }
 }

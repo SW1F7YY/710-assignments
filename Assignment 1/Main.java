@@ -11,6 +11,9 @@ public class Main {
     public static final String RED = "\u001B[31m";
     public static final String GREEN = "\u001B[32m";
     public static final String YELLOW = "\u001B[33m";
+
+    public static final int maxDepth = 4;
+    public static final int popSize = 3;
     public static void main(String[] args){
         // Depth will always start from 1 E.x: Max Depth 1 will only be 1 node aka root node
         System.out.println(YELLOW + "Initializing variables" + RESET);
@@ -39,8 +42,13 @@ public class Main {
         }
         System.out.println(GREEN + "Sets populated, creating population generator" + RESET);
 
-        Path path = Paths.get("C:\\Users\\Family\\Desktop\\Uni\\COS 710\\Assignment 1/training_data.txt");
+        // Mac
+        Path path = Paths.get("/Users/stephansmit/Desktop/Uni Assignments/710-assignments/Assignment 1/training_data.txt");
+
+        // Windows
+//        Path path = Paths.get("C:\\Users\\Family\\Desktop\\Uni\\COS 710\\Assignment 1/training_data.txt");
         List<String> trainingDataLines = null;
+
         try{
             trainingDataLines = Files.readAllLines(path);}
         catch (IOException e) {
@@ -54,7 +62,7 @@ public class Main {
         System.out.println(GREEN + "Population Generator created with \nterminals:" + terminalString + "\nfunctions:" + functionString + RESET);
 
         System.out.println(YELLOW + "Starting initial population generation" + RESET);
-        List<Node> population = createPopulation.generate(PopulationGenerator.PopulationMethod.GROW, 3, 4);
+        List<Node> population = createPopulation.generate(PopulationGenerator.PopulationMethod.GROW, popSize, maxDepth);
         System.out.println(GREEN+ "Initial population has been completed. Size:" + population.size() + RESET);
 
         // printing initial trees
@@ -110,7 +118,7 @@ public class Main {
             }
             System.out.println(YELLOW + "Starting crossover" + RESET);
             
-            GenericOperators gp = new GenericOperators("classic", newPopulation);
+            GenericOperators gp = new GenericOperators(newPopulation, RNG, maxDepth);
             newPopulation = gp.classicCrossover();
             System.out.println(GREEN + "Generic operations passed" + RESET);
             for (int i = 0; i < newPopulation.size(); i++){
