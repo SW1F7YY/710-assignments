@@ -16,6 +16,7 @@ public class Main {
     public static final int popSize = 3;
     public static void main(String[] args){
         // Depth will always start from 1 E.x: Max Depth 1 will only be 1 node aka root node
+        // ! Loading Data
         System.out.println(YELLOW + "Initializing variables" + RESET);
         final Random RNG = new Random(1);
         int maxGenerations = 1;
@@ -58,6 +59,7 @@ public class Main {
         }
         System.out.println(GREEN + "Training Data loaded" + RESET);
 
+        // ! Creating Population
         PopulationGenerator createPopulation = new PopulationGenerator(terminals, functionSymbols, RNG);
         System.out.println(GREEN + "Population Generator created with \nterminals:" + terminalString + "\nfunctions:" + functionString + RESET);
 
@@ -66,18 +68,20 @@ public class Main {
         System.out.println(GREEN+ "Initial population has been completed. Size:" + population.size() + RESET);
 
         // printing initial trees
-        for (int i = 0; i < population.size(); i++) {
-            System.out.println("Tree " + (i + 1) + ":\n");
-            Node root = population.get(i);
-            root.printTree("");
-        }
-
+//        for (int i = 0; i < population.size(); i++) {
+//            System.out.println("Tree " + (i + 1) + ":\n");
+//            Node root = population.get(i);
+//            root.printTree("");
+//        }
+        // ! Starting training
         System.out.println(YELLOW + "Starting training" + RESET);
         int currentGeneration = 0;
         while(currentGeneration < maxGenerations) {
             currentGeneration++;
             System.out.println(YELLOW + "Current generation:" + currentGeneration + RESET);
             int treeindex = 0;
+
+            // ! Fitness function
             System.out.println(YELLOW + "Starting fitness calculation" + RESET);
             for (Node tree : population) { // 1. Pick a student (Tree)
                 treeindex++;
@@ -107,17 +111,19 @@ public class Main {
             }
             System.out.println(GREEN + "Fitness generation completed" + RESET);
 
+            // ! Selection
             System.out.println(YELLOW + "Starting selection" + RESET);
             Selection tournamentSelection = new Selection(population, RNG, tournamentSize);
             List<Node> newPopulation = tournamentSelection.performTournamentSelection();
             System.out.println(GREEN + "Selection finished" + RESET);
 
-            for (int i = 0; i < newPopulation.size(); i++){
-                System.out.println("\nNew population tree " + (i + 1) + ":");
-                newPopulation.get(i).printTree("");
-            }
+//            for (int i = 0; i < newPopulation.size(); i++){
+//                System.out.println("\nNew population tree " + (i + 1) + ":");
+//                newPopulation.get(i).printTree("");
+//            }
+
+            // ! Crossover
             System.out.println(YELLOW + "Starting crossover" + RESET);
-            
             GenericOperators gp = new GenericOperators(newPopulation, RNG, maxDepth);
             newPopulation = gp.classicCrossover();
             System.out.println(GREEN + "Generic operations passed" + RESET);
@@ -126,8 +132,17 @@ public class Main {
                 newPopulation.get(i).printTree("");
             }
 
-            // TODO: implement genetic operators (crossover currently)
+            // ! Mutation
+            System.out.println(YELLOW + "Starting mutation" + RESET);
+            Mutation mutation = new Mutation(newPopulation, maxDepth, RNG, terminals, functionSymbols);
+            newPopulation = mutation.mutate();
+            System.out.println(GREEN + "Mutation completed" + RESET);
+            for (int i = 0; i < newPopulation.size(); i++){
+                System.out.println("\nNew population tree " + (i + 1) + ":");
+                newPopulation.get(i).printTree("");
+            }
 
+            // ! prune to keep max depth
 
         }
 

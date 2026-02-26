@@ -1,6 +1,7 @@
 import java.io.IOError;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class FitnessFunction {
     public double calculateFitness(Node rootNode, double[] trainingDataTerminalValues, List<String> terminalPlaceholders){
@@ -14,8 +15,11 @@ public class FitnessFunction {
             return trainingDataTerminalValues[terminalPlaceholders.indexOf(currentNode.value)];
         };
 
+        // create mock data
+        List<String> emptyString = List.of();
+        PopulationGenerator.FunctionSymbol[] emptyArray = {};
+        PopulationGenerator arityFinder = new PopulationGenerator(emptyString, emptyArray,new Random());
         // find the arity
-        PopulationGenerator arityFinder = new PopulationGenerator();
         PopulationGenerator.FunctionSymbol currentSymbol = arityFinder.getFunctionSymbol(currentNode.value);
         int currentSymbolArity = arityFinder.getFunctionSymbol(currentNode.value).arity;
         if (currentSymbolArity != currentNode.children.size()) throw new IOError(new Throwable("Children size and arity doesn't match"));

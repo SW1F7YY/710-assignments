@@ -4,9 +4,9 @@ import java.util.Random;
 
 public class Selection {
     // for this we will be using tournament selection
-    public List<Node> population;
-    public Random rng;
-    public int tournamentSize;
+    private final List<Node> population;
+    private final Random rng;
+    private final int tournamentSize;
 
     public Selection(List<Node> population, Random rng, int tournamentSize){
         this.rng = rng;

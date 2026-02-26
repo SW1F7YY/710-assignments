@@ -6,19 +6,18 @@ import java.util.List;
 import java.util.Random;
 
 public class PopulationGenerator {
-    public Random rng;
-    public List<String> terminalSet;
-    public FunctionSymbol[] functionalSet;
+    private final Random rng;
+    private final List<String> terminalSet;
+    private final FunctionSymbol[] functionalSet;
     public enum PopulationMethod { GROW, FULL, RAMPED }
 
     public PopulationGenerator(List<String> terminalSet, FunctionSymbol[] functionalSet, Random rng){
         this.terminalSet = terminalSet;
         this.functionalSet = functionalSet;
-        this.rng= rng;
+        this.rng = rng;
     }
 
     //to enable searching for functional symbol
-    public PopulationGenerator(){};
 
     public enum FunctionSymbol {
         ADD("+", 2, (args) -> args[0] + args[1]),

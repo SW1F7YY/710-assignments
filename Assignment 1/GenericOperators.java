@@ -63,6 +63,7 @@ public class GenericOperators {
             } else {
                 newPopulation.add(population.get(i).copy());
             }
+
         }
         return newPopulation;
     }
