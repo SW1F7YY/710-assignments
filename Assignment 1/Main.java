@@ -12,11 +12,10 @@ public class Main {
     public static final String GREEN = "\u001B[32m";
     public static final String YELLOW = "\u001B[33m";
 
-    public static final int maxDepth = 4;
+    public static final int maxDepth = 6;
     public static final int popSize = 3;
     public static void main(String[] args){
         // Depth will always start from 1 E.x: Max Depth 1 will only be 1 node aka root node
-        // ! Loading Data
         System.out.println(YELLOW + "Initializing variables" + RESET);
         final Random RNG = new Random(1);
         int maxGenerations = 1;
@@ -143,6 +142,14 @@ public class Main {
             }
 
             // ! prune to keep max depth
+            System.out.println(YELLOW + "Pruning the population" + RESET);
+            Prune pruner = new Prune(newPopulation, maxDepth, terminals, RNG);
+            newPopulation = pruner.prune();
+            System.out.println(GREEN + "Pruning complete" + RESET);
+            for (int i = 0; i < newPopulation.size(); i++){
+                System.out.println("\nNew population tree " + (i + 1) + ":");
+                newPopulation.get(i).printTree("");
+            }
 
         }
 
