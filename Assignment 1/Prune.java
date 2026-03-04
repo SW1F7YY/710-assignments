@@ -26,32 +26,27 @@ public class Prune {
         return newPopulation;
     }
 
-    private Node pruneHelper(int maxDepth, Node currentNode, int currentDepth){
-        // check if it's at the max depth
-        if (currentNode.type.equals("terminal")){
+    private Node pruneHelper(int maxDepth, Node currentNode, int currentDepth) {
+        // 1. Base case: Terminals are always fine
+        if (currentNode.type.equals("terminal")) {
             return currentNode;
         }
-        if (currentDepth < maxDepth){
-            // if it's not at the max depth, and it's a function, go deeper, otherwise just return the terminal
-            for (int i = 0; i < currentNode.children.size(); i++){
-                currentNode.children.set(i, pruneHelper(maxDepth, currentNode.children.get(i), currentDepth + 1));
+
+        // 2. If we've reached the limit, we MUST return a terminal
+        if (currentDepth >= maxDepth + 2) {
+            // Instead of a random terminal, try to find a terminal child to preserve SOME logic
+            for (Node child : currentNode.children) {
+                if (child.type.equals("terminal")) return child;
             }
-        } else {
-            // check if one any of the kids are a terminal
-            List<Node> terminalKids = new ArrayList<>();
-            for (Node child: currentNode.children){
-                if (child.type.equals("terminal")){
-                    terminalKids.add(child);
-                }
-            }
-            if (terminalKids.isEmpty()){
-                // just get a random one from the terminal set
-                currentNode = new Node(terminalSet.get(rng.nextInt(terminalSet.size())), "terminal");
-            } else {
-                // not empty, get a random one
-                currentNode = terminalKids.get(rng.nextInt(terminalKids.size()));
-            }
+            // If no terminal child exists, then and only then, pisck a random one
+            return new Node(terminalSet.get(rng.nextInt(terminalSet.size())), "terminal");
         }
+
+        // 3. If we aren't at depth yet, keep the function but prune its children
+        for (int i = 0; i < currentNode.children.size(); i++) {
+            currentNode.children.set(i, pruneHelper(maxDepth, currentNode.children.get(i), currentDepth + 1));
+        }
+
         return currentNode;
     }
 }

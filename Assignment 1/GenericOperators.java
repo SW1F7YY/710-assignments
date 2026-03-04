@@ -17,58 +17,69 @@ public class GenericOperators {
         List<Node> newPopulation = new ArrayList<>();
 
         for (int i = 0; i < population.size(); i += 2) {
-            if (i + 1 <population.size()) {
+            if (i + 1 < population.size()) {
                 Node childA = population.get(i).copy();
                 Node childB = population.get(i + 1).copy();
 
-                if (rng.nextDouble() < 0.85) {
+                if (rng.nextDouble() < 0.7) {
+                    List<NodePoint> pointsA = getAllPoints(childA, null, -1);
+                    List<NodePoint> pointsB = getAllPoints(childB, null, -1);
 
-                    Node parentNodeA = childA;
-                    Node targetA = childA;
-                    int lastIndexA = 0;
-                    int depthA = rng.nextInt(1, maxDepth);
+                    NodePoint cpA = pointsA.get(rng.nextInt(pointsA.size()));
+                    NodePoint cpB = pointsB.get(rng.nextInt(pointsB.size()));
 
-                    for (int j = 0; j < depthA; j++) {
-                        if (targetA.children.isEmpty()) break;
+                    // --- THE CRITICAL FIX ---
+                    // Extract the "Genetic Material" before performing the surgery
+                    Node branchFromA = cpA.node.copy();
+                    Node branchFromB = cpB.node.copy();
 
+                    // Insert Branch B into Tree A
+                    if (cpA.parent == null) childA = branchFromB;
+                    else cpA.parent.children.set(cpA.indexInParent, branchFromB);
 
-                        lastIndexA = rng.nextInt(targetA.children.size());
-                        parentNodeA = targetA;
-                        targetA = targetA.children.get(lastIndexA);
+                    // Insert Branch A into Tree B
+                    // Insert Branch A into Tree B
+                    if (cpB.parent == null) {
+                        childB = branchFromA;
+                    } else {
+                        // SAFETY CHECK: Ensure the index still exists
+                        if (cpB.indexInParent < cpB.parent.children.size()) {
+                            cpB.parent.children.set(cpB.indexInParent, branchFromA);
+                        } else {
+                            // If the index is gone (due to a previous swap/mutation),
+                            // just add it as a new child or skip
+                            cpB.parent.children.add(branchFromA);
+                        }
                     }
-
-                    Node parentNodeB = childB;
-                    Node targetB = childB;
-                    int lastIndexB = 0;
-                    int depthB = rng.nextInt(1, maxDepth);
-
-                    for (int j = 0; j < depthB; j++) {
-                        if (targetB.children.isEmpty()) break;
-                        lastIndexB = rng.nextInt(targetB.children.size());
-                        parentNodeB = targetB;
-                        targetB = targetB.children.get(lastIndexB);
-                    }
-
-
-                    Node graftForB = targetA.copy();
-                    Node graftForA = targetB.copy();
-
-                    parentNodeA.children.set(lastIndexA, graftForA);
-                    parentNodeB.children.set(lastIndexB, graftForB);
                 }
-
 
                 newPopulation.add(childA);
                 newPopulation.add(childB);
             } else {
                 newPopulation.add(population.get(i).copy());
             }
-
         }
         return newPopulation;
     }
 
-    public List<Node> internalCrossover() {
-        return null;
+    // Helper class to track a node and its parent
+    private static class NodePoint {
+        Node node;
+        Node parent;
+        int indexInParent;
+
+        NodePoint(Node n, Node p, int i) {
+            this.node = n; this.parent = p; this.indexInParent = i;
+        }
+    }
+
+    // Recursive helper to find every node in the tree
+    private List<NodePoint> getAllPoints(Node current, Node parent, int index) {
+        List<NodePoint> points = new ArrayList<>();
+        points.add(new NodePoint(current, parent, index));
+        for (int i = 0; i < current.children.size(); i++) {
+            points.addAll(getAllPoints(current.children.get(i), current, i));
+        }
+        return points;
     }
 }

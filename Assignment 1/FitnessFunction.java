@@ -1,34 +1,77 @@
-import java.io.IOError;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class FitnessFunction {
-    public double calculateFitness(Node rootNode, double[] trainingDataTerminalValues, List<String> terminalPlaceholders){
-        if (rootNode.type.equals("terminal")) return Double.parseDouble(rootNode.value);
-        return calculateFitnessHelper(rootNode,trainingDataTerminalValues, terminalPlaceholders);
-    };
 
-    private double calculateFitnessHelper(Node currentNode, double[] trainingDataTerminalValues, List<String> terminalPlaceholders) {
-        // check if it's a terminal
-        if (currentNode.type.equals("terminal")){
-            return trainingDataTerminalValues[terminalPlaceholders.indexOf(currentNode.value)];
-        };
-
-        // create mock data
-        List<String> emptyString = List.of();
-        PopulationGenerator.FunctionSymbol[] emptyArray = {};
-        PopulationGenerator arityFinder = new PopulationGenerator(emptyString, emptyArray,new Random());
-        // find the arity
-        PopulationGenerator.FunctionSymbol currentSymbol = arityFinder.getFunctionSymbol(currentNode.value);
-        int currentSymbolArity = arityFinder.getFunctionSymbol(currentNode.value).arity;
-        if (currentSymbolArity != currentNode.children.size()) throw new IOError(new Throwable("Children size and arity doesn't match"));
-
-        // get the values for the children
-        double[] childResults = new double[currentNode.children.size()];
-        for ( int i = 0; i < currentNode.children.size(); i++){
-            childResults[i] = calculateFitnessHelper(currentNode.children.get(i), trainingDataTerminalValues, terminalPlaceholders);
+    public double calculateFitness(Node rootNode, double[] trainingDataTerminalValues, List<String> terminalPlaceholders) {
+        // Handle a single-node tree (just a terminal)
+        if (rootNode.type.equals("terminal")) {
+            return getTerminalValue(rootNode, trainingDataTerminalValues, terminalPlaceholders);
         }
-        return currentSymbol.apply(childResults);
+        return evaluate(rootNode, trainingDataTerminalValues, terminalPlaceholders);
+    }
+
+    private double evaluate(Node currentNode, double[] trainingDataTerminalValues, List<String> terminalPlaceholders) {
+        // Base Case: If it's a terminal, look up its value
+        if (currentNode.type.equals("terminal")) {
+            return getTerminalValue(currentNode, trainingDataTerminalValues, terminalPlaceholders);
+        }
+
+        // Recursive Step: Evaluate all children first
+        double[] childResults = new double[currentNode.children.size()];
+        for (int i = 0; i < currentNode.children.size(); i++) {
+            childResults[i] = evaluate(currentNode.children.get(i), trainingDataTerminalValues, terminalPlaceholders);
+        }
+
+        // Apply the function (e.g., +, -, *, /)
+        // Note: You should pass your Function Map or use a switch here to avoid object creation
+        return applyFunction(currentNode.value, childResults);
+    }
+
+    private double getTerminalValue(Node node, double[] values, List<String> placeholders) {
+        // 1. Try to find it in the lag list (L1, L2, etc.)
+        int index = placeholders.indexOf(node.value);
+        if (index != -1) {
+            return values[index];
+        }
+        // 2. If not found in placeholders, it's a constant number (e.g., "1.5")
+        try {
+            return Double.parseDouble(node.value);
+        } catch (NumberFormatException e) {
+            return 0.0; // Fallback
+        }
+    }
+
+    private double applyFunction(String operator, double[] args) {
+        return switch (operator) {
+            case "+" -> args[0] + args[1];
+            case "-" -> args[0] - args[1];
+            case "*" -> args[0] * args[1];
+
+            // Protected Division: Avoids near-zero explosions
+            case "/" -> {
+                if (args.length < 2) yield 1.0; // Safety fallback
+                yield (Math.abs(args[1]) > 1e-6) ? args[0] / args[1] : 1.0;
+            }
+
+            // Protected SQRT: Avoids NaN for negative numbers
+            case "SQRT" -> Math.sqrt(Math.abs(args[0]));
+
+            // Protected POW: Avoids Infinity and NaN
+            case "POW" -> {
+                double base = args[0];
+                double exponent = args[1];
+
+                // Limit exponent to prevent Infinity (e.g., 100^100 is too big)
+                if (exponent > 10) exponent = 10;
+                if (exponent < -10) exponent = -10;
+
+                double result = Math.pow(Math.abs(base), exponent);
+
+                // Final safety check
+                yield (Double.isInfinite(result) || Double.isNaN(result)) ? 1.0 : result;
+            }
+
+            default -> 0.0;
+        };
     }
 }

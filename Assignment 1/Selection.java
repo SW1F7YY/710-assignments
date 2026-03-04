@@ -14,20 +14,18 @@ public class Selection {
         this.tournamentSize = tournamentSize;
     }
 
-    public List<Node> performTournamentSelection() {
-        List<Node> newPopulation = new ArrayList<>();
-        for(int i = 0; i < population.size(); i++){
-            Node minFitnessNode = null;
-            for (int j = 0; j < tournamentSize; j++){
-                int randomSelectionIndex = rng.nextInt(population.size());
-                if (minFitnessNode == null){
-                    minFitnessNode = population.get(randomSelectionIndex);
-                } else if (minFitnessNode.fitness > population.get(randomSelectionIndex).fitness) {
-                    minFitnessNode = population.get(randomSelectionIndex);
+    public List<Node> performTournamentSelection(int countToSelect) {
+        List<Node> winners = new ArrayList<>();
+        for(int i = 0; i < countToSelect; i++) {
+            Node bestInTournament = null;
+            for (int j = 0; j < tournamentSize; j++) {
+                Node candidate = population.get(rng.nextInt(population.size()));
+                if (bestInTournament == null || Double.compare(candidate.fitness, bestInTournament.fitness) < 0) {
+                    bestInTournament = candidate;
                 }
             }
-            newPopulation.add(minFitnessNode);
+            winners.add(bestInTournament.copy());
         }
-        return newPopulation;
+        return winners;
     }
 }

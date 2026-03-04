@@ -23,7 +23,7 @@ public class PopulationGenerator {
         ADD("+", 2, (args) -> args[0] + args[1]),
         SUB("-", 2, (args) -> args[0] - args[1]),
         MUL("*", 2, (args) -> args[0] * args[1]),
-        DIV("/", 2, (args) -> args[0] / args[1]),
+        DIV("/", 2, (args) -> (Math.abs(args[1]) < 0.000001) ? 1.0 : args[0] / args[1]),
         SQRT("sqrt", 1, (args) -> Math.sqrt(args[0])),
         POW("^", 2, (args) -> Math.pow(args[0], args[1])),
         LOG("log10", 1, args -> Math.log10(args[0])),
