@@ -21,7 +21,7 @@ public class Mutation {
         List<Node> newPopulation = new ArrayList<>();
         for (Node root: population){
             Node newRoot = root.copy();
-            if (rng.nextDouble() < 0.9){
+            if (rng.nextDouble() < 0.1){
                 Node currentNode = newRoot;
                 // perform mutation
                 int randomDepth = rng.nextInt(maxDepth);

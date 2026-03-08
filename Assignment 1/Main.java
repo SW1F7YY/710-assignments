@@ -11,8 +11,8 @@ public class Main {
     public static final String GREEN = "\u001B[32m";
     public static final String YELLOW = "\u001B[33m";
 
-    public static final int maxDepth = 8;
-    public static final int popSize = 500;
+    public static final int maxDepth = 4;
+    public static final int popSize = 100;
     public static final int elitismCount = 10;
     public static void main(String[] args){
         StringBuilder csvContent = new StringBuilder();
@@ -21,7 +21,7 @@ public class Main {
         final Random RNG = new Random(2);
         int maxGenerations = 12;
         int tournamentSize = 4;
-        List<String> terminals = List.of("L1","L2","L3", "L4");
+        List<String> terminals = List.of("L1","L2","L3","L4");
         int windowSize = terminals.size();
         PopulationGenerator.FunctionSymbol[] functionSymbols = {
                 PopulationGenerator.FunctionSymbol.ADD,
@@ -94,9 +94,10 @@ public class Main {
         // ! Starting training
         System.out.println(YELLOW + "Starting training" + RESET);
         int currentGeneration = 0;
-        int treeindex = 0;
+        int treeindex;
 
         while(currentGeneration < maxGenerations) {
+            treeindex = 0;
             currentGeneration++;
             System.out.println(YELLOW + "Current generation:" + currentGeneration + RESET);
             treeindex++;
@@ -182,30 +183,7 @@ public class Main {
             Prune pruner = new Prune(population, maxDepth, terminals, RNG);
             if (RNG.nextDouble(1) < 0.4) newPopulation = pruner.prune();
             System.out.println(GREEN + "Pruning complete" + RESET);
-            for (Node tree : newPopulation) {
-                treeindex++;
-                double totalSquaredError = 0;
-                int evalCount = 0;
-
-                for (int i = windowSize; i < allLoads.length; i++) {
-                    double target = allLoads[i];
-
-                    // Populate rowValues with the exact number of lags the GP expects
-                    for (int j = 0; j < windowSize; j++) {
-                        rowValues[j] = allLoads[i - (j + 1)];
-                    }
-
-                    // Pass the single row of data to the tree evaluator
-                    double prediction = ff.calculateFitness(tree, rowValues, terminals);
-
-                    double error = prediction - target;
-                    totalSquaredError += (error * error);
-                    evalCount++;
-                }
-                System.out.println("Tree " + treeindex + " | MSE: " + totalSquaredError/evalCount);
-                tree.fitness = totalSquaredError / evalCount;
-            }
-//            for (int i = 0; i < newPopulation.size(); i++){
+//          for (int i = 0; i < newPopulation.size(); i++){
 //                System.out.println("\nNew population tree " + (i + 1) + ":");
 //                newPopulation.get(i).printTree("");
 //            }
