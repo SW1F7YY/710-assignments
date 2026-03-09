@@ -68,7 +68,7 @@ public class FitnessFunction {
                 double result = Math.pow(Math.abs(base), exponent);
 
                 // Final safety check
-                yield (Double.isInfinite(result) || Double.isNaN(result)) ? 1.0 : result;
+                yield (Double.isInfinite(result) || Double.isNaN(result)) ? 1000.0 : (result > 1000) ? 1000 : result;
             }
 
             default -> 0.0;
