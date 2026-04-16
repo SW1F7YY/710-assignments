@@ -1,17 +1,23 @@
 import java.util.List;
 
 public class FitnessFunction {
-
-    public double calculateFitness(Node rootNode, double[] trainingDataTerminalValues, List<String> terminalPlaceholders) {
+    public static int noOfChildren = 0;
+    public double calculateFitness(Node rootNode, double[] trainingDataTerminalValues, List<String> terminalPlaceholders, double complexityPenalty ) {
         // Handle a single-node tree (just a terminal)
+        noOfChildren = 0;
         if (rootNode.type.equals("terminal")) {
             return getTerminalValue(rootNode, trainingDataTerminalValues, terminalPlaceholders);
         }
-        return evaluate(rootNode, trainingDataTerminalValues, terminalPlaceholders);
+        // TODO: 1. Add List<Node> sample and double similarityWeight to this method's parameters
+        // TODO: 2. Calculate similarity penalty: double similarityPenalty = calculateSimilarities(rootNode, sample) * similarityWeight;
+        // TODO: 3. Add similarityPenalty to the return value below
+        // TODO: 4. In Main.java, pass a random sample of k trees from the population when calling calculateFitness
+        return evaluate(rootNode, trainingDataTerminalValues, terminalPlaceholders) + (complexityPenalty * noOfChildren);
     }
 
     private double evaluate(Node currentNode, double[] trainingDataTerminalValues, List<String> terminalPlaceholders) {
         // Base Case: If it's a terminal, look up its value
+        noOfChildren++;
         if (currentNode.type.equals("terminal")) {
             return getTerminalValue(currentNode, trainingDataTerminalValues, terminalPlaceholders);
         }
@@ -73,5 +79,40 @@ public class FitnessFunction {
 
             default -> 0.0;
         };
+    }
+
+    private double calculateSimilarities(Node baseTree, List<Node> sample) {
+        int totalMatchingNodes = 0;
+        double totalSimilarity = 0.0;
+        for (Node otherTree : sample) {
+            totalMatchingNodes += countMatching(baseTree, otherTree);
+            double similarity = (double) totalMatchingNodes / Math.max(sizeOf(baseTree), sizeOf(otherTree));
+            System.out.println("Similarity with tree: " + similarity);
+            totalSimilarity += similarity;
+        }
+        return totalSimilarity / sample.size(); // Average similarity across the sample
+    }
+
+    private int countMatching(Node nodeA, Node nodeB) {
+        // start with the root nodes
+        int count = 0;
+        if (nodeA.value.equals(nodeB.value) && nodeA.type.equals(nodeB.type)) {
+            count++;
+            
+        }
+            // Recursively check children
+            for (int i = 0; i < Math.min(nodeA.children.size(), nodeB.children.size()); i++) {
+                count += countMatching(nodeA.children.get(i), nodeB.children.get(i));
+            }
+        
+        return count;
+    }
+
+    private int sizeOf(Node node) {
+        int count = 1;
+        for (Node child : node.children) {
+            count += sizeOf(child);
+        }
+        return count;
     }
 }

@@ -95,7 +95,7 @@ public class PopulationGenerator {
         Node rootNode = new Node(functionalSet[randomRootIndex].label, "function");
         rootNode = buildGrowFromRoot(1, rootNode, maxDepth);
         return rootNode;
-    };
+    }
 
     public Node buildFull(int maxDepth) {
         int randomRootIndex = rng.nextInt(functionalSet.length);
@@ -123,7 +123,7 @@ public class PopulationGenerator {
         // loop through and populate the different nodes
         for ( int i = 0; i < currentSymbol.arity; i++) {
             Node child;
-            if (currentDepth == maxDepth - 1) {
+            if (currentDepth >= maxDepth - 1) {
                 int randomTerminalIndex = rng.nextInt(terminalSet.size());
                 child = new Node(terminalSet.get(randomTerminalIndex), "terminal");
             } else {
@@ -150,7 +150,7 @@ public class PopulationGenerator {
         if (currentSymbol == null) return null;
         for (int i = 0; i < currentSymbol.arity; i++){
             Node child;
-            if (currentDepth == maxDepth - 1) {
+            if (currentDepth >= maxDepth - 1) {
                 int randomTerminalIndex = rng.nextInt(terminalSet.size());
                 child = new Node(terminalSet.get(randomTerminalIndex), "terminal");
             } else {

@@ -1,8 +1,11 @@
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Main {
     public static final String RESET = "\u001B[0m";
@@ -11,15 +14,20 @@ public class Main {
     public static final String YELLOW = "\u001B[33m";
 
     public static final int maxDepth = 6; // best is 6: Tree 0 | MSE: 4.855578254196218E-4
-
+    public static final double complexityPenalty = 0.00001;
     public static final int popSize = 200; // best is 200
     public static final int elitismCount = 10; // best is 10
     public static void main(String[] args){
+        long startTime = System.nanoTime();
+
+
         StringBuilder csvContent = new StringBuilder();
         csvContent.append("Generation,BestMSE,AverageMSE\n");
         // Depth will always start from 1 E.x: Max Depth 1 will only be 1 node aka root node
         System.out.println(YELLOW + "Initializing variables" + RESET);
-        final Random RNG = new Random(2);
+        long seed = (args.length > 0) ? Long.parseLong(args[0]) : 10L;
+        System.out.println(YELLOW + "Using seed: " + seed + RESET);
+        final Random RNG = new Random(seed);
         int maxGenerations = 12;
         int tournamentSize = 4;
         List<String> terminals = List.of("L1","L2","L3","L4");
@@ -40,20 +48,13 @@ public class Main {
         }
         System.out.println(GREEN + "Sets populated, creating population generator" + RESET);
 
-        // Mac
-//        Path path = Paths.get("/Users/stephansmit/Desktop/Uni Assignments/710-assignments/Assignment 1/training_data.txt");
-//        Path path = Paths.get("/Users/stephansmit/Desktop/Uni Assignments/710-assignments/Assignment 1/Data_set.csv");
-
-        // Windows
-//        Path path = Paths.get("C:\\Users\\Family\\Desktop\\Uni\\COS 710\\Assignment 1/training_data.txt");
-        Path path = Paths.get("C:\\Users\\Family\\Desktop\\Uni\\COS 710\\Assignment 1/Data_set.csv");
+        // Load from classpath — works in IDE and when packaged as a JAR
         List<String> trainingDataLines;
-
-        try{
-            trainingDataLines = Files.readAllLines(path);}
-        catch (IOException e) {
-
-            System.out.println(RED + "Loading training data failed" + RESET);
+        try (InputStream is = Main.class.getResourceAsStream("/Data_set.csv");
+             BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
+            trainingDataLines = reader.lines().collect(Collectors.toList());
+        } catch (IOException | NullPointerException e) {
+            System.out.println(RED + "Loading training data failed — Data_set.csv not found on classpath" + RESET);
             return;
         }
         System.out.println(GREEN + "Training Data loaded" + RESET);
@@ -115,7 +116,7 @@ public class Main {
                     }
 
                     // Pass the single row of data to the tree evaluator
-                    double prediction = ff.calculateFitness(tree, rowValues, terminals);
+                    double prediction = ff.calculateFitness(tree, rowValues, terminals, complexityPenalty);
 
                     double error = prediction - target;
                     totalSquaredError += (error * error);
@@ -169,28 +170,53 @@ public class Main {
 //                newPopulation.get(i).printTree("");
 //            }
 
-            // ! Crossover
-            System.out.println(YELLOW + "Starting crossover" + RESET);
-            GenericOperators gp = new GenericOperators(population, RNG, maxDepth);
-            newPopulation = gp.classicCrossover();
-            System.out.println(GREEN + "Generic operations passed" + RESET);
-//            for (int i = 0; i < newPopulation.size(); i++){
-//                System.out.println("\nNew population tree " + (i + 1) + ":");
-//                newPopulation.get(i).printTree("");
-//            }
-            population = newPopulation;
+               // * continue from where elitisim left off in new population and apply crossover/mutation to the rest of the population
+            newPopulation = new ArrayList<>(population.subList(0, elitismCount)); // Start with elites
+            for (int i = elitismCount; i < population.size(); i += 2) {
+                double randomValue = RNG.nextDouble(1);
+                if (randomValue < 0.7 && i + 1 < population.size()) {
+                    // ! Crossover
+                    System.out.println(YELLOW + "Starting crossover" + RESET);
+                    GenericOperators gp = new GenericOperators(RNG, maxDepth);
+                    newPopulation.addAll(gp.classicCrossover(population.get(i), population.get(i + 1)));
+                    System.out.println(GREEN + "Generic operations passed" + RESET);
+                } else if ( randomValue < 0.85) {
+                    // mutate 
+                    System.out.println(YELLOW + "Starting mutation" + RESET);
+                    Mutation mutation = new Mutation(maxDepth, RNG, terminals, functionSymbols);
+                    newPopulation.add(mutation.mutate(population.get(i)));
+                } else {
+                    // just copy the rest to maintain diversity and avoid overfitting to crossover/mutation
+                    newPopulation.add(population.get(i).copy());
+                }
+            }
 
-            // ! Mutation
-            System.out.println(YELLOW + "Starting mutation" + RESET);
-            Mutation mutation = new Mutation(population, maxDepth, RNG, terminals, functionSymbols);
-            newPopulation = mutation.mutate();
-            System.out.println(GREEN + "Mutation completed" + RESET);
-//            for (int i = 0; i < newPopulation.size(); i++){
-//                System.out.println("\nNew population tree " + (i + 1) + ":");
-//                newPopulation.get(i).printTree("");
-//            }
 
-            population = newPopulation;
+            // should crossover or mutation be applied?
+    //         if (RNG.nextDouble(1) < 0.7) {
+    //         // ! Crossover
+    //             System.out.println(YELLOW + "Starting crossover" + RESET);
+    //             GenericOperators gp = new GenericOperators(population, RNG, maxDepth);
+    //             newPopulation = gp.classicCrossover();
+    //             System.out.println(GREEN + "Generic operations passed" + RESET);
+    // //            for (int i = 0; i < newPopulation.size(); i++){
+    // //                System.out.println("\nNew population tree " + (i + 1) + ":");
+    // //                newPopulation.get(i).printTree("");
+    // //            }
+    //             population = newPopulation;
+    //         } else {
+    //         // ! Mutation
+    //             System.out.println(YELLOW + "Starting mutation" + RESET);
+    //             Mutation mutation = new Mutation(population, maxDepth, RNG, terminals, functionSymbols);
+    //             newPopulation = mutation.mutate();
+    //             System.out.println(GREEN + "Mutation completed" + RESET);
+    // //            for (int i = 0; i < newPopulation.size(); i++){
+    // //                System.out.println("\nNew population tree " + (i + 1) + ":");
+    // //                newPopulation.get(i).printTree("");
+    // //            }
+    
+    //             population = newPopulation;
+    //         }
             // ! prune to keep max depth
             System.out.println(YELLOW + "Pruning the population" + RESET);
             Prune pruner = new Prune(population, maxDepth, terminals, RNG);
@@ -205,13 +231,33 @@ public class Main {
 
 
         }
+        // Re-evaluate fitness on the final population so values are not 0.0
+//        System.out.println(YELLOW + "Re-evaluating fitness on final population" + RESET);
+//        FitnessFunction ffFinal = new FitnessFunction();
+//        double[] rowValuesFinal = new double[windowSize];
+//        for (Node tree : population) {
+//            double totalSquaredErrorFinal = 0;
+//            int evalCountFinal = 0;
+//            for (int i = windowSize; i < trainingSet.length; i++) {
+//                double target = trainingSet[i];
+//                for (int j = 0; j < windowSize; j++) {
+//                    rowValuesFinal[j] = trainingSet[i - (j + 1)];
+//                }
+//                double prediction = ffFinal.calculateFitness(tree, rowValuesFinal, terminals);
+//                double error = prediction - target;
+//                totalSquaredErrorFinal += (error * error);
+//                evalCountFinal++;
+//            }
+//            tree.fitness = totalSquaredErrorFinal / evalCountFinal;
+//        }
+
         System.out.println("\n=== TOP 3 TREES IN FINAL POPULATION ===");
         population.stream()
                 .sorted(Comparator.comparingDouble(t -> t.fitness))
                 .limit(3)
                 .forEach(t -> {
-                    System.out.println("MSE: " + t.fitness * 1000);
-                    t.printTree(""); // This will tell us if it's just "L1"
+                    System.out.println("MSE: " + t.fitness);
+                    t.printTree("");
                 });
 
 
@@ -242,7 +288,7 @@ public class Main {
 
             // Pass the single row of data to the tree evaluator
 
-            double prediction = ff.calculateFitness(bestTree, rowValues, terminals);
+            double prediction = ff.calculateFitness(bestTree, rowValues, terminals, complexityPenalty);
 
             double error = prediction - target;
             totalSquaredError += (error * error);
@@ -259,7 +305,12 @@ public class Main {
 //            System.out.println("Current fitness for population member " + i + ": " + fitnessFunction.calculateFitness(population.get(i)));
 //        }
 //        System.out.println("Finishes raw fitness calculations");
+        long endTime = System.nanoTime();
+        long durationInNanoseconds = (endTime - startTime);
 
+// Convert to seconds for your report
+        double durationInSeconds = (double) durationInNanoseconds / 1_000_000_000;
+        System.out.println("Total Execution Time: " + durationInSeconds + " seconds");
 
         try {
             Files.writeString(Path.of("evolution_results.csv"), csvContent.toString());

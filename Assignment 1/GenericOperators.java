@@ -3,33 +3,27 @@ import java.util.List;
 import java.util.Random;
 
 public class GenericOperators {
-    private final List<Node> population;
     private final Random rng;
     private final int maxDepth;
 
-    GenericOperators(List<Node> population, Random rng, int maxDepth){
-        this.population = population;
+    GenericOperators(Random rng, int maxDepth){
         this.rng = rng;
         this.maxDepth = maxDepth;
     }
 
-    public List<Node> classicCrossover() {
-        List<Node> newPopulation = new ArrayList<>();
+    public List<Node> classicCrossover(Node A, Node B){
+      
+        List<Node> newNodes = new ArrayList<>();
+                Node childA = A.copy();
+                Node childB = B.copy();
 
-        for (int i = 0; i < population.size(); i += 2) {
-            if (i + 1 < population.size()) {
-                Node childA = population.get(i).copy();
-                Node childB = population.get(i + 1).copy();
-
-                if (rng.nextDouble() < 0.7) {
                     List<NodePoint> pointsA = getAllPoints(childA, null, -1);
                     List<NodePoint> pointsB = getAllPoints(childB, null, -1);
 
                     NodePoint cpA = pointsA.get(rng.nextInt(pointsA.size()));
                     NodePoint cpB = pointsB.get(rng.nextInt(pointsB.size()));
 
-                    // --- THE CRITICAL FIX ---
-                    // Extract the "Genetic Material" before performing the surgery
+                    
                     Node branchFromA = cpA.node.copy();
                     Node branchFromB = cpB.node.copy();
 
@@ -37,8 +31,7 @@ public class GenericOperators {
                     if (cpA.parent == null) childA = branchFromB;
                     else cpA.parent.children.set(cpA.indexInParent, branchFromB);
 
-                    // Insert Branch A into Tree B
-                    // Insert Branch A into Tree B
+                    
                     if (cpB.parent == null) {
                         childB = branchFromA;
                     } else {
@@ -51,15 +44,11 @@ public class GenericOperators {
                             cpB.parent.children.add(branchFromA);
                         }
                     }
-                }
 
-                newPopulation.add(childA);
-                newPopulation.add(childB);
-            } else {
-                newPopulation.add(population.get(i).copy());
-            }
-        }
-        return newPopulation;
+                newNodes.add(childA);
+                newNodes.add(childB);
+            
+        return newNodes;
     }
 
     // Helper class to track a node and its parent
